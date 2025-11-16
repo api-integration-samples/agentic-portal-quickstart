@@ -1,6 +1,7 @@
 import express from "express";
 import { initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
+import { McpUserService } from "./mcp";
 import {
   PortalService,
   type Error,
@@ -12,6 +13,7 @@ import {
 const firebaseApp = initializeApp();
 
 const app = express();
+const mcpUserService = new McpUserService();
 app.use(express.static("public")); // for static hosting
 app.use(express.json()); // for json data
 
@@ -210,6 +212,10 @@ app.put(
     else res.status(200).send(JSON.stringify(apps.data));
   },
 );
+
+app.post("/user/mcp", mcpUserService.mcppost);
+app.get("/user/mcp", mcpUserService.handleSessionRequest);
+app.delete("/user/mcp", mcpUserService.handleSessionRequest);
 
 app.delete(
   "/users/:email/apps/:appName/keys/:keyName/products/:productName",

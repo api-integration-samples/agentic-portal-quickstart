@@ -6,6 +6,7 @@ WORKDIR /opt/app
 COPY package.json .
 COPY package-lock.json .
 COPY index.ts .
+COPY mcp.ts .
 COPY public/ ./public/
 
 RUN npm i
