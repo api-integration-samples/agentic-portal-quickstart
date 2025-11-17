@@ -1,5 +1,3 @@
-echo $GCLOUD_PROJECT
-PROJECT_ID=$GCLOUD_PROJECT
 echo "Creating service account..."
 gcloud iam service-accounts create "agentic-portal-service" --description="Service account to manage the agentic portal" \
     --display-name="Agentic Portal Service"

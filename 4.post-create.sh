@@ -1,9 +1,3 @@
-echo "Creating eventarc update triggers..."
-echo $GCLOUD_PROJECT
-PROJECT_ID=$GCLOUD_PROJECT
-echo $GCLOUD_REGION
-REGION=$GCLOUD_REGION
-
 gcloud eventarc triggers create api-create-trigger --event-filters="type=google.cloud.apihub.api.v1.created" \
     --destination-run-service="agentic-portal" --destination-run-path="/cache-refresh" --location=$REGION --project=$PROJECT_ID \
     --service-account="agentic-portal-service@$PROJECT_ID.iam.gserviceaccount.com"
