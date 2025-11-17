@@ -1,7 +1,8 @@
 import express from "express";
+import cors from "cors";
 import { initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
-import { McpUserService } from "./mcp";
+import { McpUserService } from "./mcp.ts";
 import {
   PortalService,
   type Error,
@@ -13,9 +14,16 @@ import {
 const firebaseApp = initializeApp();
 
 const app = express();
-const mcpUserService = new McpUserService();
+app.use(cors());
 app.use(express.static("public")); // for static hosting
 app.use(express.json()); // for json data
+
+const projectId = process.env.GCLOUD_PROJECT ?? process.env.PROJECT_ID;
+const region = process.env.GCLOUD_REGION ?? process.env.REGION;
+console.log(`Starting with project ${projectId} and region ${region}`);
+
+const portalService = new PortalService(projectId, region);
+const mcpUserService = new McpUserService(portalService);
 
 const getAuthToken = (req, res, next) => {
   if (
@@ -44,9 +52,16 @@ export const checkIfAuthenticated = (req, res, next) => {
   });
 };
 
-const cache: { apis: ApiHubApi[]; versions: ApiHubApiVersion[] } = {
+const cache: {
+  apis: ApiHubApi[];
+  versions: { [key: string]: ApiHubApiVersion };
+  deployments: any;
+  specs: any;
+} = {
   apis: [],
-  versions: [],
+  versions: {},
+  deployments: {},
+  specs: {},
 };
 
 let cachePromise = loadCache();
@@ -70,7 +85,7 @@ app.get("/apis", async (req, res) => {
   if (cachePromise) await cachePromise;
   res.send({
     apis: cache.apis,
-    versions: cache.versions,
+    versions: Object.values(cache.versions),
   });
 });
 
@@ -79,47 +94,50 @@ app.get("/api-spec", async (req, res) => {
   let versionName = req.query.version?.toString()
     ? req.query.version.toString()
     : "";
-  let portalService = new PortalService(
-    process.env.PROJECT_ID,
-    process.env.REGION,
-  );
-  let namePieces = versionName.split("/");
-  let apiName = "";
-  if (namePieces.length > 5) apiName = namePieces[5] ?? "";
-  if (apiName) {
-    let apiResult = await portalService.getApi(apiName);
-    if (apiResult && apiResult.data) result.api = apiResult.data;
-  }
-  let versionResult = await portalService.getApiVersion(versionName);
-  if (versionResult && versionResult.data) {
-    result.version = versionResult.data;
-    if (result.version.deployments && result.version.deployments.length > 0) {
-      // get deployment
-      let deploymentResult = await portalService.getApiDeployment(
-        result.version.deployments[0],
-      );
-      if (deploymentResult && deploymentResult.data) {
-        result.deployment = deploymentResult.data;
-      }
-    }
-  }
-  let versionSpecResult: { data: any; error: Error } =
-    await portalService.getApiVersionSpecs(versionName);
-  if (
-    versionSpecResult.data &&
-    versionSpecResult.data.specs &&
-    versionSpecResult.data.specs.length &&
-    versionSpecResult.data.specs.length > 0
-  ) {
-    let specResult: { data: ApiHubApiVersionSpecContents; error: Error } =
-      await portalService.getApiVersionSpecContents(
-        versionSpecResult.data.specs[0]["name"],
-      );
 
-    if (specResult.data) {
-      result.spec = specResult.data;
-    }
+  if (cache.versions[versionName]) {
+    result.version = cache.versions[versionName];
+    result.api = result.version["apiData"];
+    result.deployment = result.version["deployment"];
+    result.spec = result.version["spec"];
   }
+  // let namePieces = versionName.split("/");
+  // let apiName = "";
+  // if (namePieces.length > 5) apiName = namePieces[5] ?? "";
+  // if (apiName) {
+  //   let apiResult = await portalService.getApi(apiName);
+  //   if (apiResult && apiResult.data) result.api = apiResult.data;
+  // }
+  // let versionResult = await portalService.getApiVersion(versionName);
+  // if (versionResult && versionResult.data) {
+  //   result.version = versionResult.data;
+  //   if (result.version.deployments && result.version.deployments.length > 0) {
+  //     // get deployment
+  //     let deploymentResult = await portalService.getApiDeployment(
+  //       result.version.deployments[0],
+  //     );
+  //     if (deploymentResult && deploymentResult.data) {
+  //       result.deployment = deploymentResult.data;
+  //     }
+  //   }
+  // }
+  // let versionSpecResult: { data: any; error: Error } =
+  //   await portalService.getApiVersionSpecs(versionName);
+  // if (
+  //   versionSpecResult.data &&
+  //   versionSpecResult.data.specs &&
+  //   versionSpecResult.data.specs.length &&
+  //   versionSpecResult.data.specs.length > 0
+  // ) {
+  //   let specResult: { data: ApiHubApiVersionSpecContents; error: Error } =
+  //     await portalService.getApiVersionSpecContents(
+  //       versionSpecResult.data.specs[0]["name"],
+  //     );
+
+  //   if (specResult.data) {
+  //     result.spec = specResult.data;
+  //   }
+  // }
 
   if (result.version) res.send(result);
   else res.status(404).send("Spec not found");
@@ -128,10 +146,6 @@ app.get("/api-spec", async (req, res) => {
 app.post("/users", async (req, res) => {
   let errorCode = 0;
 
-  let portalService = new PortalService(
-    process.env.PROJECT_ID,
-    process.env.REGION,
-  );
   let user = req.body;
   let result = await portalService.createDeveloper(user);
 
@@ -144,10 +158,6 @@ app.post("/users", async (req, res) => {
 
 app.get("/users/:email/apps", async (req, res) => {
   let email = req.params.email;
-  let portalService = new PortalService(
-    process.env.PROJECT_ID,
-    process.env.REGION,
-  );
 
   let apps = await portalService.getApps(email);
   if (apps.error) res.status(apps.error.code).send(apps.error.message);
@@ -158,10 +168,6 @@ app.post("/users/:email/apps", async (req, res) => {
   let email = req.params.email;
   let appName = req.body.name;
   let products = req.body.products;
-  let portalService = new PortalService(
-    process.env.PROJECT_ID,
-    process.env.REGION,
-  );
 
   let app = await portalService.createApp(email, appName);
   if (app.error) res.status(app.error.code).send(app.error.message);
@@ -171,10 +177,6 @@ app.post("/users/:email/apps", async (req, res) => {
 app.delete("/users/:email/apps/:appName", async (req, res) => {
   let email = req.params.email;
   let appName = req.params.appName;
-  let portalService = new PortalService(
-    process.env.PROJECT_ID,
-    process.env.REGION,
-  );
 
   let app = await portalService.deleteApp(email, appName);
   if (app.error) res.status(app.error.code).send(app.error.message);
@@ -182,11 +184,6 @@ app.delete("/users/:email/apps/:appName", async (req, res) => {
 });
 
 app.get("/products", async (req, res) => {
-  let portalService = new PortalService(
-    process.env.PROJECT_ID,
-    process.env.REGION,
-  );
-
   let productData = await portalService.getProducts();
   if (productData.error)
     res.status(productData.error.code).send(productData.error.message);
@@ -200,10 +197,6 @@ app.put(
     let appName = req.params.appName;
     let keyName = req.params.keyName;
     let productName = req.params.productName;
-    let portalService = new PortalService(
-      process.env.PROJECT_ID,
-      process.env.REGION,
-    );
 
     let apps = await portalService.addAppKeyProducts(email, appName, keyName, [
       productName,
@@ -213,10 +206,6 @@ app.put(
   },
 );
 
-app.post("/user/mcp", mcpUserService.mcppost);
-app.get("/user/mcp", mcpUserService.handleSessionRequest);
-app.delete("/user/mcp", mcpUserService.handleSessionRequest);
-
 app.delete(
   "/users/:email/apps/:appName/keys/:keyName/products/:productName",
   async (req, res) => {
@@ -224,10 +213,6 @@ app.delete(
     let appName = req.params.appName;
     let keyName = req.params.keyName;
     let productName = req.params.productName;
-    let portalService = new PortalService(
-      process.env.PROJECT_ID,
-      process.env.REGION,
-    );
 
     let apps = await portalService.removeAppKeyProduct(
       email,
@@ -240,12 +225,14 @@ app.delete(
   },
 );
 
+// MCP
+app.post("/mcp", mcpUserService.mcppost);
+app.get("/mcp", mcpUserService.handleSessionRequest);
+app.delete("/mcp", mcpUserService.handleSessionRequest);
+
 async function loadCache(): Promise<boolean> {
   return new Promise(async (resolve, reject) => {
-    let portalService = new PortalService(
-      process.env.PROJECT_ID,
-      process.env.REGION,
-    );
+    let portalService = new PortalService(projectId, region);
     let projectApis = await portalService.getApis(
       "target_user.enum_values.values.display_name:Public",
     );
@@ -253,12 +240,51 @@ async function loadCache(): Promise<boolean> {
       cache.apis = projectApis.data;
 
       for (let api of cache.apis) {
+        // get versions
         let versions = await portalService.getApiVersions(api.name);
-        if (versions && versions.data && versions.data.length > 0)
-          cache.versions = cache.versions.concat(versions.data);
+        if (versions && versions.data && versions.data.length > 0) {
+          // cache.versions = cache.versions.concat(versions.data);
+          for (let version of versions.data) {
+            cache.versions[version.name] = version;
+            version["apiData"] = api;
+            if (version.deployments && version.deployments.length > 0) {
+              // get deployments
+              let deploymentResult = await portalService.getApiDeployment(
+                version.deployments[0],
+              );
+              if (deploymentResult && deploymentResult.data) {
+                cache.deployments[version.name] = deploymentResult.data;
+                version["deployment"] = deploymentResult.data;
+              }
+            }
+
+            // get specs
+            let versionSpecResult: { data: any; error: Error } =
+              await portalService.getApiVersionSpecs(version.name);
+            if (
+              versionSpecResult.data &&
+              versionSpecResult.data.specs &&
+              versionSpecResult.data.specs.length &&
+              versionSpecResult.data.specs.length > 0
+            ) {
+              let specResult: {
+                data: ApiHubApiVersionSpecContents;
+                error: Error;
+              } = await portalService.getApiVersionSpecContents(
+                versionSpecResult.data.specs[0]["name"],
+              );
+
+              if (specResult.data) {
+                cache.specs[version.name] = specResult.data;
+                version["spec"] = specResult.data;
+              }
+            }
+          }
+        }
       }
     }
 
+    mcpUserService.updateCache(cache);
     resolve(true);
   });
 }

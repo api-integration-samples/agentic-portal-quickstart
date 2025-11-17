@@ -657,6 +657,7 @@
                             user_email = newUser.email;
                             localStorage.setItem("user_email", user.email);
                             setUser();
+                            new ChatInterface();
                         } else {
                             setUser();
                         }
@@ -875,13 +876,16 @@
 
                 async generateResponse(userMessage) {
                     let result = true;
+                    let idToken = await firebase
+                        .auth()
+                        .currentUser.getIdToken(true);
                     try {
                         if (this.config.apigeeAgentUrl) {
                             let newResponse = await fetch(
                                 this.config.apigeeAgentUrl + "/run",
                                 {
                                     method: "POST",
-                                    signal: AbortSignal.timeout(5000),
+                                    signal: AbortSignal.timeout(15000),
                                     headers: {
                                         "Content-Type": "application/json",
                                     },
@@ -893,7 +897,10 @@
                                             role: "user",
                                             parts: [
                                                 {
-                                                    text: userMessage,
+                                                    text:
+                                                        userMessage +
+                                                        ". My idToken is: " +
+                                                        idToken,
                                                 },
                                             ],
                                         },
@@ -1005,8 +1012,6 @@
                     this.messages.scrollTop = this.messages.scrollHeight;
                 }
             }
-
-            new ChatInterface();
         </script>
     </body>
 </html>

@@ -1,0 +1,40 @@
+{
+  "name": "agentic-portal",
+  "env": {
+    "AUTH_API_KEY": {
+      "description": "Your Identity Platform auth API key for a web application (get it from the console)."
+    },
+    "AUTH_DOMAIN": {
+      "description": "Your identity platform auth domain for a web application (get it from the console)."
+    }
+  },
+  "options": {
+    "allow-unauthenticated": true,
+    "memory": "512Mi",
+    "cpu": "1",
+    "port": 8080,
+    "http2": false,
+    "concurrency": 80,
+    "max-instances": 10
+  },
+  "build": {
+    "skip": true,
+    "buildpacks": {
+      "builder": ""
+    }
+  },
+  "hooks": {
+    "prebuild": {
+      "commands": []
+    },
+    "postbuild": {
+      "commands": []
+    },
+    "precreate": {
+      "commands": ["./2.pre-create.sh"]
+    },
+    "postcreate": {
+      "commands": ["./3.post-create.sh"]
+    }
+  }
+}

@@ -1,8 +1,7 @@
 SECONDS=0
 
 gcloud run deploy agentic-portal --source . --project $PROJECT_ID --region $REGION --allow-unauthenticated \
-    --set-env-vars "AUTH_API_KEY=$AUTH_API_KEY,AUTH_DOMAIN=$AUTH_DOMAIN,PROJECT_ID=$PROJECT_ID,REGION=$REGION" \
-    --service-account "agentic-portal-service@$PROJECT_ID.iam.gserviceaccount.com"
+    --env-vars-file ".env" --service-account "agentic-portal-service@$PROJECT_ID.iam.gserviceaccount.com"
 
 duration=$SECONDS
 echo "Total deployment finished in $((duration / 60)) minutes and $((duration % 60)) seconds."

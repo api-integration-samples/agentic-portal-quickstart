@@ -20,7 +20,9 @@
   "homepage": "https://github.com/api-integration-samples/agentic-portal-quickstart#readme",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.22.0",
+    "@types/cors": "^2.8.19",
     "apigee-portal-module": "^0.8.0",
+    "cors": "^2.8.5",
     "express": "^5.1.0",
     "firebase-admin": "^13.6.0",
     "google-auth-library": "^10.5.0",

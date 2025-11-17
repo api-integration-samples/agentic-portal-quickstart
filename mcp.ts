@@ -1,4 +1,3 @@
-import fs from "fs";
 import express from "express";
 import { randomUUID } from "node:crypto";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -6,13 +5,46 @@ import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/
 import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
 import { any, z } from "zod";
 import * as YAML from "yaml";
+import { getAuth } from "firebase-admin/auth";
+
+import {
+  PortalService,
+  type Error,
+  type ApiHubApi,
+  type ApiHubApiVersion,
+  type ApiHubApiVersionSpecContents,
+} from "apigee-portal-module";
 
 export class McpUserService {
+  portalService: PortalService;
+  dataCache: {
+    apis: ApiHubApi[];
+    versions: { [key: string]: ApiHubApiVersion };
+    deployments: any;
+    specs: any;
+  } = {
+    apis: [],
+    versions: {},
+    deployments: {},
+    specs: {},
+  };
+
+  constructor(service: PortalService) {
+    this.portalService = service;
+  }
+
   // Map to store transports by session ID
   public transports: { [sessionId: string]: StreamableHTTPServerTransport } =
     {};
 
-  constructor() {}
+  public updateCache(newCache: {
+    apis: ApiHubApi[];
+    versions: { [key: string]: ApiHubApiVersion };
+    deployments: any;
+    specs: any;
+  }) {
+    this.dataCache = newCache;
+  }
 
   public handleSessionRequest = async (
     req: express.Request,
@@ -66,46 +98,60 @@ export class McpUserService {
       server.registerTool(
         "appsList",
         {
-          title: "Apps List Tool",
-          description: "Lists all app subscriptions.",
-          inputSchema: {},
+          title: "App Subscriptions List Tool",
+          description: "Lists all subscriptions to API products.",
+          inputSchema: {
+            idToken: z.string(),
+          },
         },
-        async () => {
-          let appList = [
-            {
-              appId: "1",
-              name: "App 1",
-              apis: ["API 1", "API 2"],
-            },
-            {
-              appId: "2",
-              name: "App 2",
-              apis: ["API 2"],
-            },
-            {
-              appId: "3",
-              name: "App 3",
-              apis: ["API 1", "API 3"],
-            },
-          ];
-          if (appList) {
+        async ({ idToken }) => {
+          let userEmail = "";
+          try {
+            const userInfo = await getAuth().verifyIdToken(idToken);
+            console.log(userInfo);
+            if (userInfo) userEmail = userInfo.email ?? "";
+          } catch (e) {
+            console.error("Could not verify user id token.");
             return {
               content: [
                 {
                   type: "text",
-                  text: `${JSON.stringify(appList)}`,
+                  text: `Could not verify the user.`,
+                },
+              ],
+            };
+          }
+          if (!userEmail) {
+            console.error("User email could not be found.");
+            return {
+              content: [
+                {
+                  type: "text",
+                  text: `Could not find the user.`,
                 },
               ],
             };
           } else {
-            return {
-              content: [
-                {
-                  type: "text",
-                  text: `No apps found.`,
-                },
-              ],
-            };
+            let appsResponse = await this.portalService.getApps(userEmail);
+            if (appsResponse && appsResponse.data) {
+              return {
+                content: [
+                  {
+                    type: "text",
+                    text: `${JSON.stringify(appsResponse.data)}`,
+                  },
+                ],
+              };
+            } else {
+              return {
+                content: [
+                  {
+                    type: "text",
+                    text: `No apps found.`,
+                  },
+                ],
+              };
+            }
           }
         },
       );
