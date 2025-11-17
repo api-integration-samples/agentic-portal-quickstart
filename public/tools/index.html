@@ -537,37 +537,44 @@
                                               ]["values"][0]["displayName"]
                                             : "REST";
 
-                                        if (
-                                            !filterTypes.includes(
-                                                newProduct["type"],
+                                        if (newProduct["type"] != "A2A") {
+                                            if (
+                                                !filterTypes.includes(
+                                                    newProduct["type"],
+                                                )
                                             )
-                                        )
-                                            filterTypes.push(
-                                                newProduct["type"],
-                                            );
+                                                filterTypes.push(
+                                                    newProduct["type"],
+                                                );
 
-                                        for (let [key, value] of Object.entries(
-                                            apiProduct.attributes,
-                                        )) {
-                                            if (key.endsWith("/category")) {
-                                                newProduct["topic"] =
-                                                    value["enumValues"][
-                                                        "values"
-                                                    ][0]["displayName"];
-                                            } else if (key.endsWith("/tags")) {
-                                                for (let tag of value[
-                                                    "enumValues"
-                                                ]["values"]) {
-                                                    newProduct["tags"].push(
-                                                        tag["displayName"],
-                                                    );
+                                            for (let [
+                                                key,
+                                                value,
+                                            ] of Object.entries(
+                                                apiProduct.attributes,
+                                            )) {
+                                                if (key.endsWith("/category")) {
+                                                    newProduct["topic"] =
+                                                        value["enumValues"][
+                                                            "values"
+                                                        ][0]["displayName"];
+                                                } else if (
+                                                    key.endsWith("/tags")
+                                                ) {
+                                                    for (let tag of value[
+                                                        "enumValues"
+                                                    ]["values"]) {
+                                                        newProduct["tags"].push(
+                                                            tag["displayName"],
+                                                        );
+                                                    }
                                                 }
                                             }
-                                        }
-                                        if (!newProduct["topic"])
-                                            newProduct["topic"] = "General";
+                                            if (!newProduct["topic"])
+                                                newProduct["topic"] = "General";
 
-                                        products.push(newProduct);
+                                            products.push(newProduct);
+                                        }
                                     }
                                 }
                         }

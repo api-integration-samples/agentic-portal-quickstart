@@ -275,6 +275,8 @@
                 </div>
             </header>
         </div>
+        <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference"></script>
+        <div id="app"></div>
 
         <!-- Main API Product Showcase Card -->
         <div
@@ -349,17 +351,6 @@
                     With low-latency responses and competitive pricing, it's the
                     perfect backbone for next-generation intelligent features.
                 </p>
-                <div class="mt-6">
-                    <a
-                        id="open-oas-button"
-                        href="#"
-                        target="_blank"
-                        title="Click to explore the OpenAPI documentation"
-                        class="hidden flex-shrink-0 px-4 py-3 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
-                    >
-                        Explore OpenAPI
-                    </a>
-                </div>
             </section>
 
             <!-- Endpoint  -->
@@ -714,36 +705,63 @@
                     response.json().then((versionInfo) => {
                         console.log(versionInfo);
 
-                        // try to just get API info
-                        if (versionInfo.api) {
-                            let titleText = versionInfo.api.displayName;
-                            let descriptionText = versionInfo.api.description;
-                            titleElement.innerHTML = titleText;
-                            descriptionElement.innerHTML = descriptionText;
-                            typeElement.innerHTML = "Type: " + toolType;
-                        }
-                        if (versionInfo.deployment) {
-                            let endpointUrl = "No endpoint available";
-                            if (
-                                versionInfo.deployment.endpoints &&
-                                versionInfo.deployment.endpoints.length > 0
-                            ) {
-                                endpointUrl =
-                                    versionInfo.deployment.endpoints[0];
-                                endpointElement.value = endpointUrl;
+                        if (toolType == "REST" && versionInfo.spec) {
+                            let spec = atob(versionInfo.spec.contents);
+                            Scalar.createApiReference("#app", {
+                                // The URL of the OpenAPI/Swagger document
+                                // url: "https://registry.scalar.com/@scalar/apis/galaxy/latest?format=json",
+                                content: spec,
+                                // Avoid CORS issues
+                                proxyUrl: "https://proxy.scalar.com",
+                                showToolbar: "never",
+                                customCss: `
+                                .light-mode {
+                                  --scalar-color-1: #121212;
+                                  --scalar-color-2: rgba(0, 0, 0, 0.6);
+                                  --scalar-color-3: rgba(0, 0, 0, 0.4);
+                                  --scalar-color-accent: #0a85d1;
+                                  --scalar-background-1: #1e293b;
+                                  --scalar-background-2: #f6f5f4;
+                                  --scalar-background-3: #334155;
+                                  --scalar-background-accent: #5369d20f;
+                                  --scalar-border-color: rgba(0, 0, 0, 0.08);
+                                }
+                                .dark-mode {
+                                  --scalar-color-1: rgba(255, 255, 255, 0.81);
+                                  --scalar-color-2: rgba(255, 255, 255, 0.443);
+                                  --scalar-color-3: rgba(255, 255, 255, 0.282);
+                                  --scalar-color-accent: #8ab4f8;
+                                  --scalar-background-1: #0f172a;
+                                  --scalar-background-2: #1e293b;
+                                  --scalar-background-3: #334155;
+                                  --scalar-background-accent: #8ab4f81f;
+                                }
+                              `,
+                            });
+                        } else {
+                            // try to just get API info
+                            if (versionInfo.api) {
+                                let titleText = versionInfo.api.displayName;
+                                let descriptionText =
+                                    versionInfo.api.description;
+                                titleElement.innerHTML = titleText;
+                                descriptionElement.innerHTML = descriptionText;
+                                typeElement.innerHTML = "Type: " + toolType;
                             }
-                        }
-                        let elem = document.getElementById("showcase");
-                        if (elem) {
-                            elem.classList.remove("hidden");
-                        }
-
-                        if (toolType == "REST") {
-                            let oasButton =
-                                document.getElementById("open-oas-button");
-                            if (oasButton) {
-                                oasButton.href = `/oas?id=${toolId}&type=${toolType}`;
-                                oasButton.classList.remove("hidden");
+                            if (versionInfo.deployment) {
+                                let endpointUrl = "No endpoint available";
+                                if (
+                                    versionInfo.deployment.endpoints &&
+                                    versionInfo.deployment.endpoints.length > 0
+                                ) {
+                                    endpointUrl =
+                                        versionInfo.deployment.endpoints[0];
+                                    endpointElement.value = endpointUrl;
+                                }
+                            }
+                            let elem = document.getElementById("showcase");
+                            if (elem) {
+                                elem.classList.remove("hidden");
                             }
                         }
                     });
