@@ -17,12 +17,6 @@
     "concurrency": 80,
     "max-instances": 10
   },
-  "build": {
-    "skip": true,
-    "buildpacks": {
-      "builder": ""
-    }
-  },
   "hooks": {
     "prebuild": {
       "commands": []
