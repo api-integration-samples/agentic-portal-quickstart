@@ -1,6 +1,6 @@
 echo "Creating service account..."
 gcloud iam service-accounts create "agentic-portal-service" --description="Service account to manage the agentic portal" \
-    --display-name="Agentic Portal Service"
+    --display-name="Agentic Portal Service" --project $PROJECT_ID
 gcloud projects add-iam-policy-binding $PROJECT_ID \
     --member="serviceAccount:agentic-portal-service@$PROJECT_ID.iam.gserviceaccount.com" \
     --role="roles/run.admin"
