@@ -5,7 +5,7 @@ This is an experimental agentic API portal using [Apigee API hub](https://docs.c
 
 ## Try it out
 - 🚀 Try out a test deployment here: [https://portal.agenticplatform.dev](https://portal.agenticplatform.dev)
-- 🖥 Check out more screenshots in the [Wiki](https://github.com/api-integration-samples/agentic-portal-quickstart/wiki)
+- 💻 Check out more screenshots in the [Wiki](https://github.com/api-integration-samples/agentic-portal-quickstart/wiki)
 
 Deploy it yourself as a single container to [Google Cloud Run](https://cloud.google.com/run) using this tutorial in **Google Cloud Shell**, and post issues or feedback here.
 
