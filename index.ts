@@ -152,9 +152,11 @@ app.delete(
 
 app.get("/products", async (req, res) => {
   let productData = await portalService.getProducts();
-  if (productData.error)
+  if (productData.error) {
+    console.error("Error getting Apigee products.");
+    console.error(productData.error);
     res.status(productData.error.code).send(productData.error.message);
-  else res.status(200).send(JSON.stringify(productData.data.apiProduct));
+  } else res.status(200).send(JSON.stringify(productData.data.apiProduct));
 });
 
 app.put(

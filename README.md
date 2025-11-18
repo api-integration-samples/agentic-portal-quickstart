@@ -1,7 +1,7 @@
 # Agentic Portal Quickstart
 This is an experimental agentic API portal using [Apigee API hub](https://docs.cloud.google.com/apigee/docs/apihub/what-is-api-hub) as registry and [Apigee](https://cloud.google.com/apigee) as AI Gateway. You can imagine this project as a frontend for users & customers to use and interact with agentic APIs (MCP, A2A, REST).
 
-<img width="650" alt="Agentic Portal screenshot" src="https://github.com/user-attachments/assets/91e79f01-f0e2-4329-9066-a17fd4f4ce18" />
+<img width="650" alt="image" src="https://github.com/user-attachments/assets/3a535cb9-0e6a-4569-a1ba-bbc6d3762362" />
 
 ## Try it out
 - 🚀 Try out a test deployment here: [https://portal.agenticplatform.dev](https://portal.agenticplatform.dev)
@@ -17,7 +17,8 @@ Deploy it yourself as a single container to [Google Cloud Run](https://cloud.goo
 - Create app subscriptions & credentials.
 - Explore and test APIs using OpenAPI documentation (available now), MCP and A2A inspectors (coming soon).
 - Get code snippets to integrate REST, MCP & A2A with [Agent Development Kit](https://google.github.io/adk-docs/) agents.
-- Update API registry data in API hub, updates are pushed out immediately to portals using [Eventarc](https://docs.cloud.google.com/eventarc/docs).
+- [EARLY] Update API registry data in API hub, updates are pushed out immediately to portals using [Eventarc](https://docs.cloud.google.com/eventarc/docs).
+- [EARLY] A first very early version of a portal agent to help users manage their subscriptions.
 
 ## Prerequisites
 - A Google Cloud project.

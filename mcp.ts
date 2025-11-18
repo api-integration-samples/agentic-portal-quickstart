@@ -101,28 +101,26 @@ export class McpUserService {
           title: "App Subscriptions List Tool",
           description: "Lists all subscriptions to API products.",
           inputSchema: {
-            token: z
-              .string()
-              .describe("The token from the user's frontend application."),
+            email: z.string().describe("The email address of the user."),
           },
         },
-        async ({ token }) => {
-          let userEmail = "";
-          try {
-            const userInfo = await getAuth().verifyIdToken(token);
-            console.log(userInfo);
-            if (userInfo) userEmail = userInfo.email ?? "";
-          } catch (e) {
-            console.error("Could not verify user id token.");
-            return {
-              content: [
-                {
-                  type: "text",
-                  text: `Could not verify the user.`,
-                },
-              ],
-            };
-          }
+        async ({ email }) => {
+          let userEmail = email;
+          // try {
+          //   const userInfo = await getAuth().verifyIdToken(token);
+          //   console.log(userInfo);
+          //   if (userInfo) userEmail = userInfo.email ?? "";
+          // } catch (e) {
+          //   console.error("Could not verify user id token.");
+          //   return {
+          //     content: [
+          //       {
+          //         type: "text",
+          //         text: `Could not verify the user.`,
+          //       },
+          //     ],
+          //   };
+          // }
           if (!userEmail) {
             console.error("User email could not be found.");
             return {

@@ -870,9 +870,7 @@
 
                 async generateResponse(userMessage) {
                     let result = true;
-                    let idToken = await firebase
-                        .auth()
-                        .currentUser.getIdToken(true);
+
                     try {
                         if (this.config.apigeeAgentUrl) {
                             let newResponse = await fetch(
@@ -893,8 +891,9 @@
                                                 {
                                                     text:
                                                         userMessage +
-                                                        ". My token is: " +
-                                                        idToken,
+                                                        ". My email is " +
+                                                        user_email +
+                                                        ".",
                                                 },
                                             ],
                                         },
