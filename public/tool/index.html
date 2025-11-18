@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Apigee Agentic Portal - Explore</title>
+        <title>Apigee Agentic Portal</title>
         <link rel="icon" type="image/x-icon" href="/favicon.png" />
         <!-- Tailwind CSS -->
         <script src="https://cdn.tailwindcss.com"></script>
@@ -216,12 +216,6 @@
                                 class="menu-item block px-4 py-2 text-gray-700 dark:text-gray-300"
                                 >Apps</a
                             >
-                            <a
-                                href="/admin"
-                                style="color: var(--text-primary)"
-                                class="menu-item block px-4 py-2 text-gray-700 dark:text-gray-300"
-                                >Admin Console</a
-                            >
                             <button
                                 onclick="signOut()"
                                 style="
@@ -353,7 +347,6 @@
                     <a
                         id="open-oas-button"
                         href="#"
-                        target="_blank"
                         title="Click to explore the OpenAPI documentation"
                         class="hidden flex-shrink-0 px-4 py-3 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
                     >
@@ -418,9 +411,11 @@
                             1. Authentication
                         </p>
                         <p class="text-gray-400 text-sm">
-                            Sign up and get your API key from your dashboard.
-                            Keep it secure and use it as an environment variable
-                            (`GEMINI_API_KEY`).
+                            Get your credentials from the
+                            <a href="/apps">Account > Apps</a>
+                            page. For OAuth2 APIs get a token with your
+                            credentials, or for API Key APIs use your Client Id
+                            directly.
                         </p>
                     </div>
                     <!-- Step 2 -->
@@ -432,11 +427,23 @@
                         "
                     >
                         <p class="text-indigo-400 font-bold mb-1">
-                            2. Install SDK
+                            2. Try it out
                         </p>
                         <p class="text-gray-400 text-sm">
-                            Choose your language below and install the
-                            respective SDK to begin calling the endpoint.
+                            Try REST APIs out using the
+                            <b>Explore OpenAPI</b> button, or for
+                            <a
+                                href="https://github.com/modelcontextprotocol/inspector"
+                                target="_blank"
+                                >MCP</a
+                            >
+                            or
+                            <a
+                                href="https://github.com/a2aproject/a2a-inspector"
+                                target="_blank"
+                                >A2A</a
+                            >
+                            services use the inspector tools.
                         </p>
                     </div>
                 </div>
@@ -445,6 +452,7 @@
             <!-- Code Snippets (Tabbed Interface) -->
             <section>
                 <h2
+                    id="code-snippets-header"
                     class="text-xl font-semibold mb-4 text-gray-200 dark:text-gray-100"
                     style="color: var(--text-primary)"
                 >
@@ -463,14 +471,16 @@
                         Python
                     </button>
                     <button
+                        title="Coming soon!"
                         data-lang="go"
-                        class="tab-button text-sm font-medium py-2 px-4 border-b-2 border-transparent text-gray-400 hover:text-indigo-500 hover:border-indigo-500/50 transition-colors duration-200"
+                        class="cursor-not-allowed tab-button text-sm font-medium py-2 px-4 border-b-2 border-transparent text-gray-400 hover:text-indigo-500 hover:border-indigo-500/50 transition-colors duration-200"
                     >
                         Go
                     </button>
                     <button
+                        title="Coming soon!"
                         data-lang="ts"
-                        class="tab-button text-sm font-medium py-2 px-4 border-b-2 border-transparent text-gray-400 hover:text-indigo-500 hover:border-indigo-500/50 transition-colors duration-200"
+                        class="cursor-not-allowed tab-button text-sm font-medium py-2 px-4 border-b-2 border-transparent text-gray-400 hover:text-indigo-500 hover:border-indigo-500/50 transition-colors duration-200"
                     >
                         TypeScript
                     </button>
@@ -485,17 +495,7 @@
                         style="background-color: var(--bg-secondary)"
                     >
                         <pre class="whitespace-pre-wrap">
-    <code class="text-yellow-600"># Install the SDK
-    <span class="text-gray-300">pip install gemini-ai</span>
-
-    <span class="text-blue-400">import</span> gemini_ai <span class="text-blue-400">as</span> ai
-
-    <span class="text-green-400">client</span> = ai.Client(api_key=<span class="text-orange-400">"YOUR_API_KEY"</span>)
-    response = <span class="text-green-400">client</span>.generate(
-        model=<span class="text-orange-400">"flash"</span>,
-        prompt=<span class="text-orange-400">"Write a 3-line poem about the sea."</span>
-    )
-    <span class="text-blue-400">print</span>(response.<span class="text-green-400">text</span>)</code></pre>
+                            <code id="python-code-snippet" class="text-gray-300"></code></pre>
                     </div>
 
                     <!-- Go Code -->
@@ -708,22 +708,30 @@
             const titleElement = document.getElementById("title");
             const descriptionElement = document.getElementById("description");
             const typeElement = document.getElementById("typeLabel");
+            let oasButton = document.getElementById("open-oas-button");
             const endpointElement = document.getElementById("endpoint-url");
+            const codeSnippetsHeaderElement = document.getElementById(
+                "code-snippets-header",
+            );
+            const pythonCodeSnippet = document.getElementById(
+                "python-code-snippet",
+            );
+
             fetch("/api-spec?version=" + toolId).then((response) => {
                 if (response.status === 200) {
                     response.json().then((versionInfo) => {
                         console.log(versionInfo);
-
+                        let titleText = "";
                         // try to just get API info
                         if (versionInfo.api) {
-                            let titleText = versionInfo.api.displayName;
+                            titleText = versionInfo.api.displayName;
                             let descriptionText = versionInfo.api.description;
                             titleElement.innerHTML = titleText;
                             descriptionElement.innerHTML = descriptionText;
                             typeElement.innerHTML = "Type: " + toolType;
                         }
+                        let endpointUrl = "YOUR_ENDPOINT";
                         if (versionInfo.deployment) {
-                            let endpointUrl = "No endpoint available";
                             if (
                                 versionInfo.deployment.endpoints &&
                                 versionInfo.deployment.endpoints.length > 0
@@ -731,6 +739,8 @@
                                 endpointUrl =
                                     versionInfo.deployment.endpoints[0];
                                 endpointElement.value = endpointUrl;
+                            } else {
+                                endpointElement.value = "No endpoint available";
                             }
                         }
                         let elem = document.getElementById("showcase");
@@ -739,12 +749,40 @@
                         }
 
                         if (toolType == "REST") {
-                            let oasButton =
-                                document.getElementById("open-oas-button");
-                            if (oasButton) {
-                                oasButton.href = `/oas?id=${toolId}&type=${toolType}`;
-                                oasButton.classList.remove("hidden");
-                            }
+                            oasButton.href = `/oas?id=${toolId}&type=${toolType}`;
+                            oasButton.classList.remove("hidden");
+                            pythonCodeSnippet.innerHTML = `
+  <span class="text-orange-400">import</span> json
+  <span class="text-orange-400">import</span> requests
+
+  <span class="text-blue-400">resp=</span>requests.get(
+    <span class="text-green-400">"${endpointUrl}"</span>,
+    <span class="text-blue-400">headers={<span class="text-green-400">"x-api-key"</span>: <span class="text-green-400">"YOUR_API_KEY"</span>}
+  )
+                            `;
+                        } else if (toolType == "MCP") {
+                            codeSnippetsHeaderElement.innerHTML =
+                                "ADK Code Snippets";
+                            pythonCodeSnippet.innerHTML = `
+<span class="text-blue-400">MCPToolset</span>(
+    <span class="text-orange-400">connection_params=</span><span class="text-blue-400">StreamableHTTPConnectionParams</span>(
+        <span class="text-orange-400">url=</span><span class="text-green-400">"${endpointUrl}"</span>,
+    ),
+    <span class="text-orange-400">auth_scheme=</span>auth_scheme,
+    <span class="text-orange-400">auth_credential=</span>auth_credential,
+)
+                            `;
+                        } else if (toolType == "A2A") {
+                            codeSnippetsHeaderElement.innerHTML =
+                                "ADK Code Snippets";
+                            pythonCodeSnippet.innerHTML = `
+<span class="text-blue-400">RemoteA2aAgent</span>(
+  <span class="text-orange-400">name=</span><span class="text-green-400">"${titleText}"</span>,
+  <span class="text-orange-400">agent_card=</span>(
+      <span class="text-orange-400">f</span><span class="text-green-400">"${endpointUrl}"</span>,
+  ),
+)
+                          `;
                         }
                     });
                 } else {
@@ -807,12 +845,12 @@
                 }
             }
 
-            // Attach event listeners to tab buttons
-            tabButtons.forEach((button) => {
-                button.addEventListener("click", () => {
-                    showTab(button.dataset.lang);
-                });
-            });
+            // Attach event listeners to tab buttons - disable for now
+            // tabButtons.forEach((button) => {
+            //     button.addEventListener("click", () => {
+            //         showTab(button.dataset.lang);
+            //     });
+            // });
 
             // Show the default tab on load (Python)
             showTab("python");

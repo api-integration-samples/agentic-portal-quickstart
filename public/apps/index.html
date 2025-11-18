@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>App Subscription Manager</title>
+        <title>Apigee Agentic Portal</title>
         <link rel="icon" type="image/x-icon" href="/favicon.png" />
         <script src="https://cdn.tailwindcss.com"></script>
         <script src="https://www.gstatic.com/firebasejs/8.0/firebase.js"></script>
@@ -277,12 +277,6 @@
                                     class="menu-item block px-4 py-2 text-gray-700 dark:text-gray-300"
                                     >Apps</a
                                 >
-                                <a
-                                    href="/admin"
-                                    style="color: var(--text-primary)"
-                                    class="menu-item block px-4 py-2 text-gray-700 dark:text-gray-300"
-                                    >Admin Console</a
-                                >
                                 <button
                                     onclick="signOut()"
                                     style="
@@ -395,7 +389,7 @@
                         No subscriptions
                     </h3>
                     <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                        Get started by creating a new subscription.
+                        Get started by creating a new app subscription.
                     </p>
                 </div>
             </div>
@@ -674,7 +668,7 @@
 
                                     // get apps
                                     fetch(`/users/${user.email}/apps`)
-                                        .then((response) => {
+                                        .then(async (response) => {
                                             return response.json();
                                         })
                                         .then((responseJson) => {
@@ -1051,14 +1045,16 @@
                 const clientSecret = clientSecretInput.value;
 
                 const enabledApis = [];
-                document.querySelectorAll(".api-toggle").forEach((toggle) => {
-                    enabledApis.push({
-                        name: toggle.dataset.apiName,
-                        enabled: toggle.checked,
-                    });
-                });
 
                 if (id) {
+                    document
+                        .querySelectorAll(".api-toggle")
+                        .forEach((toggle) => {
+                            enabledApis.push({
+                                name: toggle.dataset.apiName,
+                                enabled: toggle.checked,
+                            });
+                        });
                     // Editing existing
                     const index = state.subscriptions.findIndex(
                         (s) => s.id === id,
@@ -1100,6 +1096,14 @@
                         // };
                     }
                 } else {
+                    document
+                        .querySelectorAll(".api-toggle")
+                        .forEach((toggle) => {
+                            enabledApis.push({
+                                name: toggle.dataset.apiName,
+                                enabled: false,
+                            });
+                        });
                     // Creating new subscription
                     let newSubscription = {
                         id: generateId(),
