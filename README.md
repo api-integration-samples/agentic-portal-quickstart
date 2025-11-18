@@ -1,7 +1,7 @@
 # Agentic Portal Quickstart
 This is an experimental agentic API portal using [Apigee API hub](https://docs.cloud.google.com/apigee/docs/apihub/what-is-api-hub) as registry and [Apigee](https://cloud.google.com/apigee) as AI Gateway. You can imagine this project as a frontend for users & customers to use and interact with agentic APIs (MCP, A2A, REST).
 
-<img width="700" height="510" alt="Agentic Portal screenshot" src="https://github.com/user-attachments/assets/91e79f01-f0e2-4329-9066-a17fd4f4ce18" />
+<img width="700" height="510" style="border-radius: 25px;" alt="Agentic Portal screenshot" src="https://github.com/user-attachments/assets/91e79f01-f0e2-4329-9066-a17fd4f4ce18" />
 
 Deploy it yourself as a single container to [Google Cloud Run](https://cloud.google.com/run) using this tutorial in **Google Cloud Shell**, and post issues or feedback here.
 
