@@ -630,6 +630,7 @@
             };
             const AVAILABLE_APIS = [];
             const DISPLAY_NAMES_MAP = {};
+            let token = "";
             setUser();
             fetch("/config")
                 .then((response) => {
@@ -649,84 +650,93 @@
                             user = newUser;
                             localStorage.setItem("user_email", user.email);
                             setUser();
-                            // get products
-                            fetch("/products")
-                                .then((response) => {
-                                    return response.json();
-                                })
-                                .then((responseJson) => {
-                                    console.log("Products:");
-                                    console.log(responseJson);
-                                    products = responseJson;
-                                    for (let product of products) {
-                                        AVAILABLE_APIS.push(
-                                            product.displayName,
-                                        );
-                                        DISPLAY_NAMES_MAP[product.displayName] =
-                                            product.name;
-                                    }
+                            newUser.getIdToken(true).then((newToken) => {
+                                token = newToken;
 
-                                    // get apps
-                                    fetch(`/users/${user.email}/apps`)
-                                        .then(async (response) => {
-                                            return response.json();
-                                        })
-                                        .then((responseJson) => {
-                                            console.log("Apps:");
-                                            console.log(responseJson);
-                                            apps = responseJson;
-                                            for (let app of apps) {
-                                                let newApp = {
-                                                    id: app.appId,
-                                                    name: app.name,
-                                                    clientId:
-                                                        app.credentials[0]
-                                                            .consumerKey,
-                                                    clientSecret:
-                                                        app.credentials[0]
-                                                            .consumerSecret,
-                                                    apis: AVAILABLE_APIS.map(
-                                                        (name, i) => ({
-                                                            name,
-                                                            enabled:
-                                                                app
-                                                                    .credentials[0]
-                                                                    .apiProducts &&
-                                                                app.credentials[0].apiProducts.find(
-                                                                    (x) =>
-                                                                        x.apiproduct ==
-                                                                            DISPLAY_NAMES_MAP[
-                                                                                name
-                                                                            ] &&
-                                                                        x.status ==
-                                                                            "approved"
-                                                                            ? true
-                                                                            : false,
-                                                                ),
-                                                        }),
-                                                    ),
-                                                };
-                                                state.subscriptions.push(
-                                                    newApp,
-                                                );
-                                                // let displayName = app.attributes.find((x) => x.name === "DisplayName")[0].value;
-                                            }
-                                            // loadData();
-                                            renderSubscriptions();
-
-                                            // hide spinner
-                                            const spinnerOverlay =
-                                                document.getElementById(
-                                                    "spinner-overlay",
-                                                );
-                                            spinnerOverlay.classList.add(
-                                                "opacity-0",
+                                // get products
+                                fetch("/products")
+                                    .then((response) => {
+                                        return response.json();
+                                    })
+                                    .then((responseJson) => {
+                                        console.log("Products:");
+                                        console.log(responseJson);
+                                        products = responseJson;
+                                        for (let product of products) {
+                                            AVAILABLE_APIS.push(
+                                                product.displayName,
                                             );
-                                            setTimeout(() => {
-                                                spinnerOverlay.remove();
-                                            }, 1000);
-                                        });
-                                });
+                                            DISPLAY_NAMES_MAP[
+                                                product.displayName
+                                            ] = product.name;
+                                        }
+
+                                        // get apps
+                                        fetch(`/users/${user.email}/apps`, {
+                                            headers: {
+                                                Authorization: `Bearer ${token}`,
+                                            },
+                                        })
+                                            .then(async (response) => {
+                                                return response.json();
+                                            })
+                                            .then((responseJson) => {
+                                                console.log("Apps:");
+                                                console.log(responseJson);
+                                                apps = responseJson;
+                                                for (let app of apps) {
+                                                    let newApp = {
+                                                        id: app.appId,
+                                                        name: app.name,
+                                                        clientId:
+                                                            app.credentials[0]
+                                                                .consumerKey,
+                                                        clientSecret:
+                                                            app.credentials[0]
+                                                                .consumerSecret,
+                                                        apis: AVAILABLE_APIS.map(
+                                                            (name, i) => ({
+                                                                name,
+                                                                enabled:
+                                                                    app
+                                                                        .credentials[0]
+                                                                        .apiProducts &&
+                                                                    app.credentials[0].apiProducts.find(
+                                                                        (x) =>
+                                                                            x.apiproduct ==
+                                                                                DISPLAY_NAMES_MAP[
+                                                                                    name
+                                                                                ] &&
+                                                                            x.status ==
+                                                                                "approved"
+                                                                                ? true
+                                                                                : false,
+                                                                    ),
+                                                            }),
+                                                        ),
+                                                    };
+                                                    state.subscriptions.push(
+                                                        newApp,
+                                                    );
+                                                    // let displayName = app.attributes.find((x) => x.name === "DisplayName")[0].value;
+                                                }
+                                                // loadData();
+                                                renderSubscriptions();
+
+                                                // hide spinner
+                                                const spinnerOverlay =
+                                                    document.getElementById(
+                                                        "spinner-overlay",
+                                                    );
+                                                spinnerOverlay.classList.add(
+                                                    "opacity-0",
+                                                );
+                                                setTimeout(() => {
+                                                    spinnerOverlay.remove();
+                                                }, 1000);
+                                            });
+                                    });
+                            });
                         } else {
                             setUser();
                         }
@@ -1074,6 +1084,9 @@
                                         `/users/${user.email}/apps/${oldState.name}/keys/${oldState.clientId}/products/${DISPLAY_NAMES_MAP[oldApi.name]}`,
                                         {
                                             method: "DELETE",
+                                            headers: {
+                                                Authorization: `Bearer ${token}`,
+                                            },
                                         },
                                     );
                                 } else if (!oldApi.enabled && newApi.enabled) {
@@ -1082,6 +1095,9 @@
                                     let url = `/users/${user.email}/apps/${oldState.name}/keys/${oldState.clientId}/products/${DISPLAY_NAMES_MAP[oldApi.name]}`;
                                     fetch(url, {
                                         method: "PUT",
+                                        headers: {
+                                            Authorization: `Bearer ${token}`,
+                                        },
                                     });
                                 }
                             }
@@ -1119,6 +1135,7 @@
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
+                            Authorization: `Bearer ${token}`,
                         },
                         body: JSON.stringify({
                             name: name,

@@ -14,7 +14,7 @@ Deploy it yourself as a single container to [Google Cloud Run](https://cloud.goo
 ## Supported features
 - Register using a Google account in the portal.
 - Browse Tools (REST, MCP) & Agents (A2A).
-- Create app subscriptions & credentials for APIs.
+- Create app subscriptions & credentials.
 - Explore and test APIs using OpenAPI documentation (available now), MCP and A2A inspectors (coming soon).
 - Get code snippets to integrate REST, MCP & A2A with [Agent Development Kit](https://google.github.io/adk-docs/) agents.
 - Update API registry data in API hub, updates are pushed out immediately to portals using [Eventarc](https://docs.cloud.google.com/eventarc/docs).
@@ -28,6 +28,7 @@ Deploy it yourself as a single container to [Google Cloud Run](https://cloud.goo
 - API hub APIs & Versions are shown in the portal if the these attributes are set (can easily be changed to other attributes, if wanted):
   - API **Target users** attribute is set to **Public**
   - Version **Lifecycle** attribute is set to **Production**
+- This is an early version, there might/will be bugs! Feel free to report [issues or feature ideas](https://github.com/api-integration-samples/agentic-portal-quickstart/issues).
 
 ## Deploy
 ```sh
@@ -44,3 +45,7 @@ source .env
 # post create
 ./4.post-create.sh
 ```
+
+## Credits
+- [Gemini 2.5 Pro](https://deepmind.google/models/gemini/pro/) for the frontend code and layout.
+- [Scalar](https://github.com/scalar/scalar) for the OpenAPI docs rendering.

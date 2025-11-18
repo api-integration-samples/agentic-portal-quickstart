@@ -101,43 +101,6 @@ app.get("/api-spec", async (req, res) => {
     result.deployment = result.version["deployment"];
     result.spec = result.version["spec"];
   }
-  // let namePieces = versionName.split("/");
-  // let apiName = "";
-  // if (namePieces.length > 5) apiName = namePieces[5] ?? "";
-  // if (apiName) {
-  //   let apiResult = await portalService.getApi(apiName);
-  //   if (apiResult && apiResult.data) result.api = apiResult.data;
-  // }
-  // let versionResult = await portalService.getApiVersion(versionName);
-  // if (versionResult && versionResult.data) {
-  //   result.version = versionResult.data;
-  //   if (result.version.deployments && result.version.deployments.length > 0) {
-  //     // get deployment
-  //     let deploymentResult = await portalService.getApiDeployment(
-  //       result.version.deployments[0],
-  //     );
-  //     if (deploymentResult && deploymentResult.data) {
-  //       result.deployment = deploymentResult.data;
-  //     }
-  //   }
-  // }
-  // let versionSpecResult: { data: any; error: Error } =
-  //   await portalService.getApiVersionSpecs(versionName);
-  // if (
-  //   versionSpecResult.data &&
-  //   versionSpecResult.data.specs &&
-  //   versionSpecResult.data.specs.length &&
-  //   versionSpecResult.data.specs.length > 0
-  // ) {
-  //   let specResult: { data: ApiHubApiVersionSpecContents; error: Error } =
-  //     await portalService.getApiVersionSpecContents(
-  //       versionSpecResult.data.specs[0]["name"],
-  //     );
-
-  //   if (specResult.data) {
-  //     result.spec = specResult.data;
-  //   }
-  // }
 
   if (result.version) res.send(result);
   else res.status(404).send("Spec not found");
@@ -156,7 +119,7 @@ app.post("/users", async (req, res) => {
   } else res.send(req.body);
 });
 
-app.get("/users/:email/apps", async (req, res) => {
+app.get("/users/:email/apps", checkIfAuthenticated, async (req, res) => {
   let email = req.params.email;
 
   let apps = await portalService.getApps(email);
@@ -164,7 +127,7 @@ app.get("/users/:email/apps", async (req, res) => {
   else res.status(200).send(JSON.stringify(apps.data));
 });
 
-app.post("/users/:email/apps", async (req, res) => {
+app.post("/users/:email/apps", checkIfAuthenticated, async (req, res) => {
   let email = req.params.email;
   let appName = req.body.name;
   let products = req.body.products;
@@ -174,14 +137,18 @@ app.post("/users/:email/apps", async (req, res) => {
   else res.status(200).send(JSON.stringify(app.data));
 });
 
-app.delete("/users/:email/apps/:appName", async (req, res) => {
-  let email = req.params.email;
-  let appName = req.params.appName;
+app.delete(
+  "/users/:email/apps/:appName",
+  checkIfAuthenticated,
+  async (req, res) => {
+    let email = req.params.email;
+    let appName = req.params.appName;
 
-  let app = await portalService.deleteApp(email, appName);
-  if (app.error) res.status(app.error.code).send(app.error.message);
-  else res.status(200).send(JSON.stringify(app.data));
-});
+    let app = await portalService.deleteApp(email, appName);
+    if (app.error) res.status(app.error.code).send(app.error.message);
+    else res.status(200).send(JSON.stringify(app.data));
+  },
+);
 
 app.get("/products", async (req, res) => {
   let productData = await portalService.getProducts();
@@ -192,6 +159,7 @@ app.get("/products", async (req, res) => {
 
 app.put(
   "/users/:email/apps/:appName/keys/:keyName/products/:productName",
+  checkIfAuthenticated,
   async (req, res) => {
     let email = req.params.email;
     let appName = req.params.appName;
@@ -208,6 +176,7 @@ app.put(
 
 app.delete(
   "/users/:email/apps/:appName/keys/:keyName/products/:productName",
+  checkIfAuthenticated,
   async (req, res) => {
     let email = req.params.email;
     let appName = req.params.appName;

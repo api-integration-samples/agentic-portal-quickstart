@@ -101,13 +101,15 @@ export class McpUserService {
           title: "App Subscriptions List Tool",
           description: "Lists all subscriptions to API products.",
           inputSchema: {
-            idToken: z.string(),
+            token: z
+              .string()
+              .describe("The token from the user's frontend application."),
           },
         },
-        async ({ idToken }) => {
+        async ({ token }) => {
           let userEmail = "";
           try {
-            const userInfo = await getAuth().verifyIdToken(idToken);
+            const userInfo = await getAuth().verifyIdToken(token);
             console.log(userInfo);
             if (userInfo) userEmail = userInfo.email ?? "";
           } catch (e) {
