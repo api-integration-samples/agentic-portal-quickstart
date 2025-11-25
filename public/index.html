@@ -7,7 +7,7 @@
         <link rel="icon" type="image/x-icon" href="/favicon.png" />
 
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://portal.agenticplatform.dev/" />
+        <meta property="og:url" content="https://portal.agenticplatform.dev" />
         <meta property="og:site_name" content="Apigee Agentic Portal" />
         <meta
             property="og:image"
@@ -18,6 +18,18 @@
             name="description"
             content="Apigee Agentic Portal leverages AI to create a dynamic, self-optimizing API ecosystem, simplifying development and boosting performance."
         />
+
+        <script>
+            // ERROR
+            window.onerror = function myErrorHandler(
+                errorMsg,
+                url,
+                lineNumber,
+            ) {
+                window.location.href = "/error";
+                return false;
+            };
+        </script>
 
         <script src="https://cdn.tailwindcss.com"></script>
         <script src="https://www.gstatic.com/firebasejs/8.0/firebase.js"></script>
@@ -82,7 +94,7 @@
             }
         </style>
     </head>
-    <body class="">
+    <body>
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <!-- Header -->
             <header
@@ -254,9 +266,9 @@
                     <p
                         class="mt-4 text-lg sm:text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto"
                     >
-                        Apigee Agentic Portal offers all of your MCP, A2A, REST
-                        and any other type of tool for any type of client. Build
-                        your ecosystem, simplifying integration and boosting
+                        Apigee Agentic Portal offers MCP, A2A, REST and any
+                        other type of tool for any type of client. Launch your
+                        agentic ecosystem, simplifying integration and boosting
                         performance.
                     </p>
                     <div class="mt-8 flex justify-center space-x-4">

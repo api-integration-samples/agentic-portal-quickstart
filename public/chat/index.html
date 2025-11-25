@@ -397,6 +397,17 @@
                 }
             }
         </style>
+        <script>
+            // ERROR
+            window.onerror = function myErrorHandler(
+                errorMsg,
+                url,
+                lineNumber,
+            ) {
+                window.location.href = "/error";
+                return false;
+            };
+        </script>
         <script src="https://cdn.jsdelivr.net/npm/marked/lib/marked.umd.js"></script>
     </head>
     <body>
