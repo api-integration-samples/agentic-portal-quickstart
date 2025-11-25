@@ -35,7 +35,7 @@ Set your Google Cloud Project Id, region, and the **Application setup details** 
 Then, source the `.env` file in the shell.
 
 ```sh
-source .env.sh
+source .env
 ```
 
 ---
